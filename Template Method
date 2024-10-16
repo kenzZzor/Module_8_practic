@@ -1,0 +1,180 @@
+public abstract class ReportGenerator
+{
+    public void GenerateReport()
+    {
+        CollectData();
+        FormatData();
+        SaveReport();
+
+        if (CustomerWantsSave())
+        {
+            SaveToFile();
+        }
+        else
+        {
+            Console.WriteLine("Report saving skipped.");
+        }
+    }
+    protected abstract void CollectData();
+    protected abstract void FormatData();
+    protected virtual void SaveReport()
+    {
+        Console.WriteLine("Saving report to standard output...");
+    }
+    protected virtual bool CustomerWantsSave()
+    {
+        return true; // По умолчанию сохраняем отчёт
+    }
+
+    protected virtual void SaveToFile()
+    {
+        Console.WriteLine("Report saved to file.");
+    }
+}
+
+
+public class PdfReport : ReportGenerator
+{
+    protected override void CollectData()
+    {
+        Console.WriteLine("Collecting data for PDF report...");
+    }
+
+    protected override void FormatData()
+    {
+        Console.WriteLine("Formatting data for PDF report...");
+    }
+}
+
+public class ExcelReport : ReportGenerator
+{
+    protected override void CollectData()
+    {
+        Console.WriteLine("Collecting data for Excel report...");
+    }
+
+    protected override void FormatData()
+    {
+        Console.WriteLine("Formatting data for Excel report...");
+    }
+
+    protected override void SaveToFile()
+    {
+        Console.WriteLine("Saving Excel report to .xlsx file...");
+    }
+
+    // Переопределяем Hook, добавляя возможность не сохранять отчёт
+    protected override bool CustomerWantsSave()
+    {
+        Console.WriteLine("Do you want to save the Excel report? (y/n): ");
+        string input = Console.ReadLine();
+        return input.ToLower() == "y";
+    }
+}
+
+public class HtmlReport : ReportGenerator
+{
+    protected override void CollectData()
+    {
+        Console.WriteLine("Collecting data for HTML report...");
+    }
+
+    protected override void FormatData()
+    {
+        Console.WriteLine("Formatting data for HTML report...");
+    }
+
+    protected override void SaveToFile()
+    {
+        Console.WriteLine("Saving HTML report to .html file...");
+    }
+}
+
+public class CsvReport : ReportGenerator
+{
+    protected override void CollectData()
+    {
+        Console.WriteLine("Collecting data for CSV report...");
+    }
+
+    protected override void FormatData()
+    {
+        Console.WriteLine("Formatting data for CSV report...");
+    }
+
+    protected override void SaveToFile()
+    {
+        Console.WriteLine("Saving CSV report to .csv file...");
+    }
+}
+
+public abstract class ReportGenerator
+{
+    public void GenerateReport()
+    {
+        CollectData();
+        FormatData();
+
+        if (CustomerWantsSave())
+        {
+            SaveToFile();
+        }
+        else if (CustomerWantsEmail())
+        {
+            SendEmail();
+        }
+        else
+        {
+            Console.WriteLine("Report saving or emailing skipped.");
+        }
+    }
+
+    protected abstract void CollectData();
+    protected abstract void FormatData();
+
+    protected virtual void SaveToFile()
+    {
+        Console.WriteLine("Report saved to file.");
+    }
+
+    protected virtual void SendEmail()
+    {
+        Console.WriteLine("Report sent via email.");
+    }
+
+    protected virtual bool CustomerWantsSave()
+    {
+        return true; // По умолчанию сохраняем
+    }
+
+    protected virtual bool CustomerWantsEmail()
+    {
+        return false; // По умолчанию не отправляем по почте
+    }
+}
+
+
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        Console.WriteLine("Generating PDF report:");
+        ReportGenerator pdfReport = new PdfReport();
+        pdfReport.GenerateReport();
+
+        Console.WriteLine("\nGenerating Excel report:");
+        ReportGenerator excelReport = new ExcelReport();
+        excelReport.GenerateReport();
+
+        Console.WriteLine("\nGenerating HTML report:");
+        ReportGenerator htmlReport = new HtmlReport();
+        htmlReport.GenerateReport();
+
+        Console.WriteLine("\nGenerating CSV report:");
+        ReportGenerator csvReport = new CsvReport();
+        csvReport.GenerateReport();
+    }
+}
+
+
