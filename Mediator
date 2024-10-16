@@ -1,0 +1,104 @@
+public interface IMediator
+{
+    void SendMessage(string message, IUser sender, string channelName);
+    void AddUserToChannel(IUser user, string channelName);
+    void RemoveUserFromChannel(IUser user, string channelName);
+}
+
+public interface IUser
+{
+    string Name { get; }
+    void SendMessage(string message, string channelName);
+    void ReceiveMessage(string message, string senderName);
+}
+
+public class User : IUser
+{
+    private IMediator _mediator;
+    public string Name { get; private set; }
+
+    public User(IMediator mediator, string name)
+    {
+        _mediator = mediator;
+        Name = name;
+    }
+
+    public void SendMessage(string message, string channelName)
+    {
+        Console.WriteLine($"{Name} sends message to {channelName}: {message}");
+        _mediator.SendMessage(message, this, channelName);
+    }
+
+    public void ReceiveMessage(string message, string senderName)
+    {
+        Console.WriteLine($"{Name} received message from {senderName}: {message}");
+    }
+}
+
+
+
+public class ChatMediator : IMediator
+{
+    private Dictionary<string, List<IUser>> _channels = new Dictionary<string, List<IUser>>();
+
+    public void SendMessage(string message, IUser sender, string channelName)
+    {
+        if (!_channels.ContainsKey(channelName))
+        {
+            Console.WriteLine($"Channel {channelName} does not exist.");
+            return;
+        }
+
+        foreach (var user in _channels[channelName])
+        {
+            // Отправляем сообщение всем пользователям канала, кроме отправителя
+            if (user != sender)
+            {
+                user.ReceiveMessage(message, sender.Name);
+            }
+        }
+    }
+
+    public void AddUserToChannel(IUser user, string channelName)
+    {
+        if (!_channels.ContainsKey(channelName))
+        {
+            _channels[channelName] = new List<IUser>();
+        }
+
+        _channels[channelName].Add(user);
+        Console.WriteLine($"{user.Name} joined {channelName} channel.");
+    }
+
+    public void RemoveUserFromChannel(IUser user, string channelName)
+    {
+        if (_channels.ContainsKey(channelName))
+        {
+            _channels[channelName].Remove(user);
+            Console.WriteLine($"{user.Name} left {channelName} channel.");
+        }
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        IMediator mediator = new ChatMediator();
+
+        IUser user1 = new User(mediator, "Alice");
+        IUser user2 = new User(mediator, "Bob");
+        IUser user3 = new User(mediator, "Charlie");
+
+        mediator.AddUserToChannel(user1, "General");
+        mediator.AddUserToChannel(user2, "General");
+        mediator.AddUserToChannel(user3, "Sports");
+
+        user1.SendMessage("Hello everyone!", "General");
+        user3.SendMessage("Who won the match?", "Sports");
+
+        mediator.RemoveUserFromChannel(user2, "General");
+        user1.SendMessage("Goodbye!", "General");
+    }
+}
+
