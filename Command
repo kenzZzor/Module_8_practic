@@ -1,0 +1,116 @@
+public interface ICommand
+{
+    void Execute();
+    void Undo();
+}
+
+public class Light
+{
+    public void On() => Console.WriteLine("Light is On");
+    public void Off() => Console.WriteLine("Light is Off");
+}
+
+public class AirConditioner
+{
+    public void On() => Console.WriteLine("Air Conditioner is On");
+    public void Off() => Console.WriteLine("Air Conditioner is Off");
+}
+
+public class TV
+{
+    public void On() => Console.WriteLine("TV is On");
+    public void Off() => Console.WriteLine("TV is Off");
+}
+
+public class LightOnCommand : ICommand
+{
+    private Light _light;
+    public LightOnCommand(Light light) => _light = light;
+
+    public void Execute() => _light.On();
+    public void Undo() => _light.Off();
+}
+
+public class LightOffCommand : ICommand
+{
+    private Light _light;
+    public LightOffCommand(Light light) => _light = light;
+
+    public void Execute() => _light.Off();
+    public void Undo() => _light.On();
+}
+
+public class RemoteControl
+{
+    private ICommand[] _onCommands;
+    private ICommand[] _offCommands;
+    private ICommand _lastCommand;
+
+    public RemoteControl()
+    {
+        _onCommands = new ICommand[3];  // допустим 3 устройства
+        _offCommands = new ICommand[3];
+    }
+
+    public void SetCommand(int slot, ICommand onCommand, ICommand offCommand)
+    {
+        _onCommands[slot] = onCommand;
+        _offCommands[slot] = offCommand;
+    }
+
+    public void OnButtonWasPushed(int slot)
+    {
+        _onCommands[slot]?.Execute();
+        _lastCommand = _onCommands[slot];
+    }
+
+    public void OffButtonWasPushed(int slot)
+    {
+        _offCommands[slot]?.Execute();
+        _lastCommand = _offCommands[slot];
+    }
+
+    public void UndoButtonWasPushed()
+    {
+        _lastCommand?.Undo();
+    }
+}
+
+public class MacroCommand : ICommand
+{
+    private ICommand[] _commands;
+
+    public MacroCommand(ICommand[] commands) => _commands = commands;
+
+    public void Execute()
+    {
+        foreach (var command in _commands)
+            command.Execute();
+    }
+
+    public void Undo()
+    {
+        foreach (var command in _commands)
+            command.Undo();
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        RemoteControl remoteControl = new RemoteControl();
+
+        Light livingRoomLight = new Light();
+        AirConditioner airConditioner = new AirConditioner();
+        TV tv = new TV();
+
+        LightOnCommand livingRoomLightOn = new LightOnCommand(livingRoomLight);
+        LightOffCommand livingRoomLightOff = new LightOffCommand(livingRoomLight);
+
+        remoteControl.SetCommand(0, livingRoomLightOn, livingRoomLightOff);
+
+        remoteControl.OnButtonWasPushed(0);   
+        remoteControl.UndoButtonWasPushed();  
+    }
+}
